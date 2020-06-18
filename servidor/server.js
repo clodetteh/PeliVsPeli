@@ -19,6 +19,7 @@ app.use(bodyParser.json());
 
 //rutas
 app.get('/competencias', controlador.generarCompetencias);
+app.get('/competencias/:id/peliculas', controlador.generarDosOpciones);
 
 
 //Base de datos
