@@ -124,3 +124,4 @@ CREATE TABLE `votos` (
 ) 
  
 
+INSERT INTO votos (`id_pelicula`, `id_competencia`) VALUES (2, 3)

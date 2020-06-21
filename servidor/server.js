@@ -1,7 +1,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var cors = require('cors');
-var postaman = require('postman');
+
 
 //Referencia controladores
 var controlador = require('./controladores/competenciasController');
@@ -20,6 +20,8 @@ app.use(bodyParser.json());
 //rutas
 app.get('/competencias', controlador.generarCompetencias);
 app.get('/competencias/:id/peliculas', controlador.generarDosOpciones);
+app.post('/competencias/:id/voto', controlador.votar);
+app.get('/competencias/:id/resultados', controlador.verResultado);
 
 
 //Base de datos
