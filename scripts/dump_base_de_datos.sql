@@ -103,7 +103,13 @@ DROP TABLE IF EXISTS `competencias`;
 CREATE TABLE `competencias` (
   `id` int NOT NULL AUTO_INCREMENT,
   `nombre` varchar(100) NOT NULL,
-  PRIMARY KEY (`id`)
+  `id_genero` int(11) unsigned,
+  `id_director` int(11) unsigned,
+  `id_actor` int(11) unsigned,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`id_genero`) REFERENCES `genero` (`id`),
+  FOREIGN KEY (`id_director`) REFERENCES `director` (`id`),
+  FOREIGN KEY (`id_actor`) REFERENCES `actor` (`id`)
 )
 
 INSERT INTO `competencias` (`nombre`) 
@@ -125,3 +131,4 @@ CREATE TABLE `votos` (
  
 
 INSERT INTO votos (`id_pelicula`, `id_competencia`) VALUES (2, 3)
+

@@ -73,6 +73,20 @@ function votar(req, res){
 
 };
 
+function borrarVotos(req, res){
+    var idCompetencia = req.params.id;
+    var sql = `delete from votos where id_competencia = ${idCompetencia}`;
+
+    con.query(sql, function(error, resultado){
+        if(error){
+            console.log("Error al reiniciar la competencia", error.message);
+            return res.status(404).send("Error al reiniciar la competencia");
+        }
+        
+        res.send(resultado);        
+    })
+}
+
 function verResultado(req,res){
     var idCompetencia = req.params.id;
     var sqlCompetencia = `select nombre from competencias where id = ${idCompetencia}`;
@@ -100,9 +114,125 @@ function verResultado(req,res){
     })
 };
 
+function crearCompetencia(req, res){
+    var nombreCompetencia = req.body.nombre;
+    var generoCompetencia = req.body.genero;
+    var actor = req.body.actor;
+    var director = req.body.director;
+    var sqlCompetencias = `select nombre from competencias where nombre = '${nombreCompetencia}'`;
+    var existe = false;
+
+    con.query(sqlCompetencias, function(error, competenciasActuales){
+        if(error){
+            console.log("Error al crear el voto", error.message);
+            return res.status(404).send("Error al crear el voto");
+        }
+
+        competenciasActuales.forEach(element => {
+            if(nombreCompetencia === element.nombre){
+                existe = true
+            }
+        });
+
+        if(existe == true) {
+            res.status(422).json("La competencia ya existe"); 
+        } else {
+            if(nombreCompetencia.length > 0 ){
+                var sqlnuevaCompetencia = `INSERT INTO competencias (nombre, id_genero, id_director, id_actor) VALUES ('${nombreCompetencia}', '${generoCompetencia}', '${director}', '${actor}')`;
+                con.query(sqlnuevaCompetencia, function(error, resultado){
+                    if(error){
+                        console.log("Error al crear la competencia", error.message);
+                        res.status(404).send("Error al crear la competencia");
+                    } else {
+                        res.send(resultado);
+                    }  
+                })
+            }else{
+                res.status(422).json("El nombre es obligatorio");
+            }
+        }
+    });
+};
+
+function infoCompetencia(req, res){
+    var idCompetencia = req.params.id;
+    var sql = `select competencias.nombre, genero.nombre as genero_nombre, actor.nombre as actor_nombre, director.nombre as director_nombre from competencias join genero on competencias.id_genero = genero.id join actor on competencias.id_actor = actor.id join director on competencias.id_director = director.id where competencias.id = '${idCompetencia}'`;
+
+    con.query(sql, function(error, resultado){
+        if(error){
+            console.log("Error al crear el voto", error.message);
+            return res.status(404).send("Error al crear el voto");
+        }
+
+        console.log(resultado[0]);
+        var response =  resultado[0];
+
+        res.send(response);
+    })
+}
+
+function cargarGeneros(req, res){
+    var genero = req.query.genero;
+    
+    if(!genero){
+        var sql = "select * from genero";
+    };
+
+    con.query(sql, function(error, resultado){
+        if(error){
+            console.log("Hubo un error en la consulta", error.message);
+            return res.status(404).send("Hubo un error en la consulta");
+        }
+
+        res.send(resultado);
+    });
+}
+
+function cargarDirectores(req, res){
+    var directores = req.query.directores;
+
+    if(!directores){
+         var sql = 'select * from director';
+    }
+
+    con.query(sql, function(error, resultado){
+        if(error){
+            console.log("Hubo un error en la consulta", error.message);
+            return res.status(404).send("Hubo un error en la consulta");
+        }
+
+        res.send(resultado);
+    })
+};
+
+function cargarActores(req, res){
+    var actores = req.query.actores;
+
+    if(!actores){
+        var sql = 'select * from actor';
+    }
+
+    con.query(sql, function(error, resultado){
+        if(error){
+            console.log("Hubo un error en la consulta", error.message);
+            return res.status(404).send("Hubo un error en la consulta");
+        }
+
+        res.send(resultado);
+    });
+}
+
+
+
 module.exports = {
     generarCompetencias : generarCompetencias,
     generarDosOpciones : generarDosOpciones,
     votar: votar,
-    verResultado: verResultado
+    verResultado: verResultado,
+    crearCompetencia : crearCompetencia,
+    borrarVotos : borrarVotos,
+    infoCompetencia : infoCompetencia,
+    cargarGeneros : cargarGeneros,
+    cargarDirectores : cargarDirectores,
+    cargarActores : cargarActores
 };

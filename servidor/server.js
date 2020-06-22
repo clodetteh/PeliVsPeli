@@ -19,9 +19,16 @@ app.use(bodyParser.json());
 
 //rutas
 app.get('/competencias', controlador.generarCompetencias);
+app.post('/competencias', controlador.crearCompetencia);
 app.get('/competencias/:id/peliculas', controlador.generarDosOpciones);
 app.post('/competencias/:id/voto', controlador.votar);
+app.delete('/competencias/:id/votos', controlador.borrarVotos);
+app.get('/competencias/:id', controlador.infoCompetencia);
 app.get('/competencias/:id/resultados', controlador.verResultado);
+app.get('/generos', controlador.cargarGeneros);
+app.get('/directores', controlador.cargarDirectores);
+app.get('/actores', controlador. cargarActores);
+
 
 
 //Base de datos
