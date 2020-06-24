@@ -5,6 +5,9 @@ var cors = require('cors');
 
 //Referencia controladores
 var controlador = require('./controladores/competenciasController');
+var crearControlador = require('./controladores/crearController');
+var editarControlador = require('./controladores/editarController');
+var eliminarControlador = require('./controladores/eliminarController');
 
 //Llamado dependencias
 var app = express();
@@ -19,17 +22,17 @@ app.use(bodyParser.json());
 
 //rutas
 app.get('/competencias', controlador.generarCompetencias);
-app.post('/competencias', controlador.crearCompetencia);
-app.get('/competencias/:id/peliculas', controlador.generarDosOpciones);
+app.post('/competencias', crearControlador.crearCompetencia);
 app.post('/competencias/:id/voto', controlador.votar);
-app.delete('/competencias/:id/votos', controlador.borrarVotos);
-app.get('/competencias/:id', controlador.infoCompetencia);
+app.get('/competencias/:id/peliculas', controlador.generarDosOpciones);
+app.delete('/competencias/:id/votos', editarControlador.borrarVotos);
+app.get('/competencias/:id', editarControlador.infoCompetencia);
 app.get('/competencias/:id/resultados', controlador.verResultado);
-app.get('/generos', controlador.cargarGeneros);
-app.get('/directores', controlador.cargarDirectores);
-app.get('/actores', controlador. cargarActores);
-app.delete('/competencias/:id', controlador.eliminarCompetencia);
-app.put('/competencias/:id', controlador.editarCompetencia);
+app.get('/generos', crearControlador.cargarGeneros);
+app.get('/directores', crearControlador.cargarDirectores);
+app.get('/actores', crearControlador. cargarActores);
+app.delete('/competencias/:id', eliminarControlador.eliminarCompetencia);
+app.put('/competencias/:id', editarControlador.editarCompetencia);
 
 
 

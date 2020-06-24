@@ -65,11 +65,11 @@ function CompetenciasController () {
 		$(".nombre").text(data.nombre);
 		$(".nombre").val(data.nombre);
 		// Se coloca en el elemento correspondiente el género de películas de la competencia, si es que hay alguno
-		$(".genero").text(data.genero_nombre);
+		$(".genero").text(data.genero);
 		// Se coloca en el elemento correspondiente el actor/actriz de la competencia, si es que hay alguno/a
-		$(".actor").text(data.actor_nombre);
+		$(".actor").text(data.actor);
 		// Se coloca en el elemento correspondiente el director/a de la competencia, si es que hay alguno/a
-		$(".director").text(data.director_nombre);
+		$(".director").text(data.director);
 	},
 
 	// Esta método obtiene y carga las opciones de películas para votar
@@ -87,11 +87,13 @@ function CompetenciasController () {
 		// Se carga el nombre de la competencia en el título de la página
 		$("#nombreCompetencia").text(opciones.competencia);
 		// Se recorren las opciones de películas (opciones.peliculas es un array) para votar que retornó la api
+
+		console.log(opciones, 'javascrip front');
 		for (var i = 0; i < opciones.peliculas.length; i++) {
 			// Se selecciona el div que contiene la opción a cargar
 			var divOpcion = "#opcion"+(i+1);
 			// Se carga el valor del id de la película de la opción actual
-			$(divOpcion+" .idPelicula").val((opciones.peliculas)[i].id);
+			$(divOpcion+" .idPelicula").val((opciones.peliculas)[i].pelicula_id);
 			// Se carga la imagen del poster de la película de la opción actual
 			$(divOpcion+" .poster").attr("src",(opciones.peliculas)[i].poster);
 			// Se carga el título de la película de la opción actual
