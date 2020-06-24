@@ -20,8 +20,7 @@ function generarCompetencias(req, res) {
 
 function generarDosOpciones(req, res) {
     var id = req.params.id;
-    var sqlCompetencia = `select nombre from competencias where id = ${id}`;
-    var sqlPeliculas = 'select id, titulo, poster from pelicula order by rand() limit 2';
+    var sqlCompetencia = `select * from competencias where id = ${id}`;
 
     con.query(sqlCompetencia, function(error, resultadoCompetencia){
 
@@ -30,11 +29,48 @@ function generarDosOpciones(req, res) {
             return res.status(404).send("Hubo un error en la consulta");
         };
 
+        // select * from pelicula join director on pelicula.director = director.nombre join actor_pelicula on pelicula.id = actor_pelicula.pelicula_id where pelicula.genero_id = 8 and director.id = 3338  and actor_pelicula.actor_id = 566;
+        var whereables = {
+            id_genero: {column: 'id_genero', filtro:`pelicula.genero_id`, valor: resultadoCompetencia[0].id_genero},
+            id_director: { column: 'id_director', filtro: `director.id`, valor: resultadoCompetencia[0].id_director},
+            id_actor: { column: 'id_actor', filtro: `actor_pelicula.actor_id`, valor: resultadoCompetencia[0].id_actor}
+        }
+
+        var joineables = {
+            id_director:  { column: 'id_director', referencia: `join director on pelicula.director = director.nombre`},
+            id_actor: { column: 'id_actor', referencia: `join actor_pelicula on pelicula.id = actor_pelicula.pelicula_id`}
+        }
+
+        var statement = ``;
+        var conditionCount = 0;
+
+        for (const [key, value] of Object.entries(joineables)) {
+            statement += ` ${value.referencia}`
+        }
+
+        for (const [key, value] of Object.entries(whereables)) {
+            if(value.valor != null) {
+                if(conditionCount == 0) {
+                    statement += ` where`;
+                } else {
+                    statement += ` and`;
+                }
+                statement += ` ${value.filtro} = ${value.valor}`
+            }
+            conditionCount++
+        }
+
+        var sqlPeliculas = `select * from pelicula ${statement} order by rand() limit 2`
+        
+
+
+        console.log(sqlPeliculas);
         con.query(sqlPeliculas, function(error, resultadoPelicula){
             if(error){
                 console.log("Hubo un error en la consulta", error.message);
                 return res.status(404).send("Hubo un error en la consulta");
             };
+
 
             if(resultadoCompetencia.length > 0){
                 var response = {
@@ -114,13 +150,17 @@ function verResultado(req,res){
     })
 };
 
-function crearCompetencia(req, res){
+function crearCompetencia(req, res){            
     var nombreCompetencia = req.body.nombre;
     var generoCompetencia = req.body.genero;
     var actor = req.body.actor;
     var director = req.body.director;
     var sqlCompetencias = `select nombre from competencias where nombre = '${nombreCompetencia}'`;
     var existe = false;
+
+    (generoCompetencia != 0) ? generoCompetencia = generoCompetencia : generoCompetencia = null;
+    (actor != 0) ? actor = actor : actor = null;
+    (director != 0) ? director = director : director = null;
 
     con.query(sqlCompetencias, function(error, competenciasActuales){
         if(error){
@@ -138,7 +178,8 @@ function crearCompetencia(req, res){
             res.status(422).json("La competencia ya existe"); 
         } else {
             if(nombreCompetencia.length > 0 ){
-                var sqlnuevaCompetencia = `INSERT INTO competencias (nombre, id_genero, id_director, id_actor) VALUES ('${nombreCompetencia}', '${generoCompetencia}', '${director}', '${actor}')`;
+                var sqlnuevaCompetencia = `INSERT INTO competencias (nombre, id_genero, id_director, id_actor) VALUES ('${nombreCompetencia}', ${generoCompetencia}, ${director}, ${actor})`;
+                
                 con.query(sqlnuevaCompetencia, function(error, resultado){
                     if(error){
                         console.log("Error al crear la competencia", error.message);
@@ -164,7 +205,6 @@ function infoCompetencia(req, res){
             return res.status(404).send("Error al crear el voto");
         }
 
-        console.log(resultado[0]);
         var response =  resultado[0];
 
         res.send(response);
@@ -222,6 +262,43 @@ function cargarActores(req, res){
     });
 }
 
+function eliminarCompetencia(req, res){
+    var id = req.params.id;
+    var sqlBorrarVotos = `delete from votos where id_competencia = ${id}`
+    var sqlBorrarCompentencia = `delete from competencias where id = ${id}` 
+
+    con.query(sqlBorrarVotos, function(error, resultadoVotos){
+        if(error){
+            console.log("Hubo un error en la consulta", error.message);
+            return res.status(404).send("Hubo un error en la consulta");
+        }
+
+        con.query(sqlBorrarCompentencia, function(error, resultadoCompetencia){
+            if(error){
+                console.log("Hubo un error en la consulta", error.message);
+                return res.status(404).send("Hubo un error en la consulta");
+            }
+
+            res.send(resultadoCompetencia);
+        })
+    })
+};
+
+function editarCompetencia(req, res){
+    var idCompetencia = req.params.id;
+    var nuevoNombre = req.body.nombre;
+    var sql = `update competencias set nombre = '${nuevoNombre}' where id = ${idCompetencia}`;
+
+    con.query(sql, function(error, resultado){
+        if(error){
+            console.log("Hubo un error en la consulta", error.message);
+            return res.status(404).send("Hubo un error en la consulta");
+        }
+
+        res.send(resultado);
+    })
+}
+
 
 
 module.exports = {
@@ -234,5 +311,7 @@ module.exports = {
     infoCompetencia : infoCompetencia,
     cargarGeneros : cargarGeneros,
     cargarDirectores : cargarDirectores,
-    cargarActores : cargarActores
+    cargarActores : cargarActores,
+    eliminarCompetencia : eliminarCompetencia,
+    editarCompetencia : editarCompetencia
 };

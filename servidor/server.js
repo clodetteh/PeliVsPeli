@@ -28,6 +28,8 @@ app.get('/competencias/:id/resultados', controlador.verResultado);
 app.get('/generos', controlador.cargarGeneros);
 app.get('/directores', controlador.cargarDirectores);
 app.get('/actores', controlador. cargarActores);
+app.delete('/competencias/:id', controlador.eliminarCompetencia);
+app.put('/competencias/:id', controlador.editarCompetencia);
 
 
 
