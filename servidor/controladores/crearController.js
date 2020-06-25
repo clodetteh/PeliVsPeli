@@ -24,24 +24,69 @@ function crearCompetencia(req, res){
             }
         });
 
-        if(existe == true) {
-            res.status(422).json("La competencia ya existe"); 
-        } else {
-            if(nombreCompetencia.length > 0 ){
-                var sqlnuevaCompetencia = `INSERT INTO competencias (nombre, id_genero, id_director, id_actor) VALUES ('${nombreCompetencia}', ${generoCompetencia}, ${director}, ${actor})`;
-                
-                con.query(sqlnuevaCompetencia, function(error, resultado){
-                    if(error){
-                        console.log("Error al crear la competencia", error.message);
-                        res.status(404).send("Error al crear la competencia");
-                    } else {
-                        res.send(resultado);
-                    }  
-                })
-            }else{
-                res.status(422).json("El nombre es obligatorio");
-            }
+        // aca va lo de buscar las competencias
+
+        var whereables = {
+            id_genero: {column: 'id_genero', filtro:`pelicula.genero_id`, valor: generoCompetencia},
+            id_director: { column: 'id_director', filtro: `director.id`, valor: director},
+            id_actor: { column: 'id_actor', filtro: `actor_pelicula.actor_id`, valor: actor}
         }
+
+        var joineables = {
+            id_director:  { column: 'id_director', referencia: `join director on pelicula.director = director.nombre`},
+            id_actor: { column: 'id_actor', referencia: `join actor_pelicula on pelicula.id = actor_pelicula.pelicula_id`}
+        }
+
+        var statement = ``;
+        var conditionCount = 0;
+
+        for (const [key, value] of Object.entries(joineables)) {
+            statement += ` ${value.referencia}`
+        }
+
+        for (const [key, value] of Object.entries(whereables)) {
+            if(value.valor != null) {
+                if(conditionCount == 0) {
+                    statement += ` where`;
+                } else {
+                    statement += ` and`;
+                }
+                statement += ` ${value.filtro} = ${value.valor}`
+                conditionCount++
+            }
+            
+        }
+
+        var sqlPeliculas = `select * from pelicula ${statement} order by rand() limit 2`
+        
+        con.query(sqlPeliculas, function(error, resultadosPeliculas){
+            if(error){
+                console.log("Error al crear el voto", error.message);
+                return res.status(404).send("Error al crear el voto");
+            }
+
+            if(existe == true) {
+                res.status(422).json("La competencia ya existe"); 
+            } else if(resultadosPeliculas.length < 2 || resultadosPeliculas[0].pelicula_id == resultadosPeliculas[0].pelicula_id){
+                res.status(422).json("No hay peliculas para comparar");
+            }else{
+                if(nombreCompetencia.length > 0){
+                    var sqlnuevaCompetencia = `INSERT INTO competencias (nombre, id_genero, id_director, id_actor) VALUES ('${nombreCompetencia}', ${generoCompetencia}, ${director}, ${actor})`;
+                    
+                    con.query(sqlnuevaCompetencia, function(error, resultado){
+                        
+                        if(error){
+                            console.log("Error al crear la competencia", error.message);
+                            res.status(404).send("Error al crear la competencia");
+                        } else {
+                            res.send(resultado);
+                        }  
+                    })
+                }else{
+                    res.status(422).json("El nombre es obligatorio");
+                }
+            }
+        })
     });
 };
 
