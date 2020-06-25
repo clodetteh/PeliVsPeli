@@ -1,4 +1,5 @@
 var con = require('../lib/conexion');
+var Query = require('./funcionesControladores');
 
 function generarCompetencias(req, res) {
     var id = req.query.id;
@@ -29,39 +30,7 @@ function generarDosOpciones(req, res) {
             return res.status(404).send("Hubo un error en la consulta");
         };
 
-// select * from pelicula join director on pelicula.director = director.nombre join actor_pelicula on pelicula.id = actor_pelicula.pelicula_id where pelicula.genero_id = 8 and director.id = 3338  and actor_pelicula.actor_id = 566;
-        var whereables = {
-            id_genero: {column: 'id_genero', filtro:`pelicula.genero_id`, valor: resultadoCompetencia[0].id_genero},
-            id_director: { column: 'id_director', filtro: `director.id`, valor: resultadoCompetencia[0].id_director},
-            id_actor: { column: 'id_actor', filtro: `actor_pelicula.actor_id`, valor: resultadoCompetencia[0].id_actor}
-        }
-
-        var joineables = {
-            id_director:  { column: 'id_director', referencia: `join director on pelicula.director = director.nombre`},
-            id_actor: { column: 'id_actor', referencia: `join actor_pelicula on pelicula.id = actor_pelicula.pelicula_id`}
-        }
-
-        var statement = ``;
-        var conditionCount = 0;
-
-        for (const [key, value] of Object.entries(joineables)) {
-            statement += ` ${value.referencia}`
-        }
-
-        for (const [key, value] of Object.entries(whereables)) {
-            if(value.valor != null) {
-                if(conditionCount == 0) {
-                    statement += ` where`;
-                } else {
-                    statement += ` and`;
-                }
-                statement += ` ${value.filtro} = ${value.valor}`
-                conditionCount++
-            }
-            
-        }
-
-        var sqlPeliculas = `select * from pelicula ${statement} order by rand() limit 2`       
+        var sqlPeliculas = Query.generarQuery(resultadoCompetencia[0].id_genero, resultadoCompetencia[0].id_director, resultadoCompetencia[0].id_actor);
 
         con.query(sqlPeliculas, function(error, resultadoPelicula){
             if(error){
@@ -133,9 +102,6 @@ function verResultado(req,res){
         })       
     })
 };
-
-
-
 
 
 module.exports = {

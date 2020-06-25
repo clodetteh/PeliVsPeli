@@ -1,4 +1,5 @@
 var con = require('../lib/conexion');
+var Query = require('./funcionesControladores');
 
 function crearCompetencia(req, res){            
     var nombreCompetencia = req.body.nombre;
@@ -24,40 +25,9 @@ function crearCompetencia(req, res){
             }
         });
 
-        // aca va lo de buscar las competencias
+        // Funcion en funcionesControladores
 
-        var whereables = {
-            id_genero: {column: 'id_genero', filtro:`pelicula.genero_id`, valor: generoCompetencia},
-            id_director: { column: 'id_director', filtro: `director.id`, valor: director},
-            id_actor: { column: 'id_actor', filtro: `actor_pelicula.actor_id`, valor: actor}
-        }
-
-        var joineables = {
-            id_director:  { column: 'id_director', referencia: `join director on pelicula.director = director.nombre`},
-            id_actor: { column: 'id_actor', referencia: `join actor_pelicula on pelicula.id = actor_pelicula.pelicula_id`}
-        }
-
-        var statement = ``;
-        var conditionCount = 0;
-
-        for (const [key, value] of Object.entries(joineables)) {
-            statement += ` ${value.referencia}`
-        }
-
-        for (const [key, value] of Object.entries(whereables)) {
-            if(value.valor != null) {
-                if(conditionCount == 0) {
-                    statement += ` where`;
-                } else {
-                    statement += ` and`;
-                }
-                statement += ` ${value.filtro} = ${value.valor}`
-                conditionCount++
-            }
-            
-        }
-
-        var sqlPeliculas = `select * from pelicula ${statement} order by rand() limit 2`
+        var sqlPeliculas = Query.generarQuery(generoCompetencia, director, actor);
         
         con.query(sqlPeliculas, function(error, resultadosPeliculas){
             if(error){
@@ -67,7 +37,7 @@ function crearCompetencia(req, res){
 
             if(existe == true) {
                 res.status(422).json("La competencia ya existe"); 
-            } else if(resultadosPeliculas.length < 2 || resultadosPeliculas[0].pelicula_id == resultadosPeliculas[0].pelicula_id){
+            } else if(resultadosPeliculas.length < 2){
                 res.status(422).json("No hay peliculas para comparar");
             }else{
                 if(nombreCompetencia.length > 0){
